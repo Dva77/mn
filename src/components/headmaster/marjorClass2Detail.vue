@@ -168,14 +168,12 @@ export default {
         async getAllNumber(){
             const token = localStorage.getItem('token');
             const { data:res } = await this.$http.get('/api/speciality/allsp?token=' + token);
-            // console.log(res);
             this.info = res.data;
         },
         // 获取所有的数据
         async getAllInfo() {
             const token = localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/speciality/xiangqing2?token=' + token);
-            console.log(res);
             this.tableData = res.data;
             this.$message({
             message: '操作成功~',
@@ -199,7 +197,6 @@ export default {
             .then(_ => {
                 done();
             })
-            .catch(_ => {});
         }
     }
     }

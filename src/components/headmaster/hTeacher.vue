@@ -234,9 +234,6 @@
                 :label-width="formLabelWidth"
                 prop="teacherGender"
                 >
-<!--            <el-input
-                    v-model="formaAlter.teacherGender"
-                    ></el-input> -->
                 <el-select
                 v-model="formaAlter.teacherGender" placeholder="请选择教师的性别"
                 >
@@ -281,9 +278,6 @@
                 label="是否院长" :label-width="formLabelWidth"
                 prop="WhetherDean"
                 >
-<!--                     <el-input
-                    v-model="formaAlter.WhetherDean"
-                    ></el-input> -->
                 <el-select
                 v-model="formaAlter.WhetherDean"
                 placeholder="请选择教师是否院长"
@@ -365,9 +359,6 @@
                 :label-width="formLabelWidth"
                 prop="teacherGenders"
                 >
-                <!--  <el-input
-                    v-model="formAdd.teacherGenders"
-                    ></el-input> -->
                 <el-select
                 v-model="formAdd.teacherGenders" placeholder="请选择教师的性别"
                 >
@@ -418,9 +409,6 @@
                 :label-width="formLabelWidth"
                 prop="WhetherDeans"
                 >
-                <!--  <el-input
-                    v-model="formAdd.teacherGenders"
-                    ></el-input> -->
                 <el-select
                 v-model="formAdd.WhetherDeans" placeholder="请选择教师是否院长"
                 >
@@ -428,15 +416,6 @@
                     <el-option size="mini" label="否" :value="0"></el-option>
                 </el-select>
                 </el-form-item>
-<!--                 <el-form-item
-                label="是否院长" :label-width="formLabelWidth"
-                prop="WhetherDeans"
-                >
-                    <el-input
-                    placeholder="请填写教师是否院长"
-                    v-model="formAdd.WhetherDeans"
-                    ></el-input>
-                </el-form-item> -->
                 <el-form-item
                 label="教师职称" :label-width="formLabelWidth"
                 prop="TeachersTitles"
@@ -504,7 +483,7 @@ export default {
             WhetherDeans:'',
             TeachersTitles:''
             },
-            formLabelWidth: '80px',
+        formLabelWidth: '80px',
         // 修改弹窗校验规则
         DialogRules:{
             teacherName:[{required:true,message:"注意教师姓名不能为空呐",trigger:"blur"}],
@@ -544,31 +523,21 @@ export default {
         async getAllNumber() {
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.get('/api/teacher/allteacher?token=' + token);
-            // console.log(res.data);
             this.info = res.data
             },
         // 获取所有的学院信息
         async getAllInfo() {
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.get('/api/teacher/showall?token=' + token);
-            console.log(res);
             this.tableData = res.data;
-            // sessionStorage.setItem('class',res.data[0].class);
             sessionStorage.setItem('class',res.data.map(o=>{return[o.class]}));
-            // sessionStorage.setItem('Number',res.data[0].Number);
-            // console.log(res.data[0].class);
-            // sessionStorage.setItem('TFormS',res.data[0].TFormS);
             sessionStorage.setItem('TFormS',res.data.map(o=>{return[o.TFormS]}));
             sessionStorage.setItem('id',res.data.map(o=>{return[o.id]}));
         },
         // 详情页面
         handleEdit(item){
-            // console.log(item);
             sessionStorage.setItem('idid',item.id);
             sessionStorage.setItem('TeacherName',item.TeacherName);
-            // sessionStorage.setItem('Declass',class);
-            // console.log(item.TeacherName);
-            // console.log(item.class);
             const id = sessionStorage.getItem('idid');
             this.$router.push({ path:'/hTeacherDetail', query: { id: id}});
         },
@@ -581,16 +550,12 @@ export default {
             center: true,
             roundButton: true
         }).then(async() => {
-            // console.log(item);
             const token=localStorage.getItem('token');
-            // console.log(item.TeacherName);
-            // console.log(item.class);
             const { data:res } = await this.$http.post('/api/teacher/delete', {
                 TeacherName: item.TeacherName,
                 class: item.class,
                 token: token
             });
-            console.log(res);
             if(res.code === 200){
                 this.getAllInfo();
                 this.$message({
@@ -614,20 +579,6 @@ export default {
         // 添加提交按钮
         async Add() {
             const token=localStorage.getItem('token');
-            const Class=sessionStorage.getItem('class');
-            // console.log(Class);
-            const TFormS=sessionStorage.getItem('TFormS');
-            // console.log(this.formAdd.teacherNames);
-            // console.log(this.formAdd.TeacherAges);
-            // console.log(this.formAdd.TeachersTitles);
-            // console.log(this.formAdd.teacherGenders);
-            // console.log(this.formAdd.TeacherEmails);
-            // console.log(this.formAdd.teacherPhones);
-            // console.log(this.formAdd.ProfessorSubjects);
-            // console.log(this.formAdd.WhetherDeans);
-            // console.log(this.formAdd.teacherClass);
-            // console.log(this.formAdd.TeacherColleges);
-            // console.log(this.formAdd.TFormS);
             const { data:res } = await this.$http.post('/api/teacher/add',
             {
                 TeacherName: this.formAdd.teacherNames,
@@ -643,13 +594,11 @@ export default {
                 TFormCollege: this.formAdd.TeacherColleges,
                 token: token
             });
-            console.log(res);
             if(res.code == 200) {
             this.$message({
             message: '操作成功~',
             type: 'success'
         });
-                // this.tableData.push(res.data);
                 this.getAllInfo();
             } else {
                 this.$message.error('抱歉，添加数据失败，请重新操作~');
@@ -658,17 +607,12 @@ export default {
         // 修改按钮
         handleRemove(item){
             this.modificationForm = true;
-            console.log(item);
             sessionStorage.setItem('id',item.id);
         },
         // 修改提交按钮
         async Alter() {
             const token=localStorage.getItem('token');
             const id=sessionStorage.getItem('id');
-            // const Class=sessionStorage.getItem('class');
-            // console.log(Class);
-            // const TFormS=sessionStorage.getItem('TFormS');
-            // console.log(TFormS);
             const { data:res } = await this.$http.post('/api/teacher/modify',
             {
                 id: id,
@@ -685,13 +629,11 @@ export default {
                 TFormS: this.formaAlter.TFormSA,
                 token: token
             });
-            console.log(res);
             if(res.code == 200) {
             this.$message({
             message: '操作成功~',
             type: 'success'
         });
-                // this.tableData.push(res.data);
                 this.getAllInfo();
             } else {
                 this.$message.error('抱歉，修改数据失败，请重新操作~');
@@ -744,13 +686,11 @@ export default {
         },
         // 根据姓名查询
         async SearchCollege() {
-            // console.log(this.input);
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/teacher/show', {
                 TeacherName: this.input,
                 token: token
                 });
-            // console.log(res.data);
             this.tableData = res.data;
             this.$message({
                 showClose: true,
@@ -782,7 +722,6 @@ export default {
             );
         },
         uploadSuccess(response, file, fileList) {
-            // console.log(response.code);
             if (response.code) {
                 this.$message({
                 message: '文件导入成功~',
@@ -793,7 +732,6 @@ export default {
         }
     },
         uploadFalse(response, file, fileList) {
-            // console.log(file);
             this.$message.error('抱歉,文件上传失败~');
     },
         // 上传前对文件的大小的判断
@@ -824,9 +762,7 @@ export default {
             this.businessType = "businessType不能为空~";
         }
     },
-        handleRemove1 (file, fileList) {
-            console.log(file, fileList);
-    },
+        handleRemove1 (file, fileList) {},
         handlePreview(file) {
             if (file.response.code) {
                 this.$message({

@@ -199,13 +199,10 @@ data() {
             const token = localStorage.getItem('token');
             sessionStorage.setItem('id',this.id);
             const id=sessionStorage.getItem('id');
-            // console.log(id);
             const { data:res } = await this.$http.post('/api/speciality/xiangqing1', {
                 id: id,
                 token: token
             });
-            console.log(res);
-            console.log(res.data.map(o=>{return[o.Number]}));
             sessionStorage.setItem('Number',res.data.map(o=>{return[o.Number]}));
         },
         // 获取所有的信息
@@ -213,22 +210,15 @@ data() {
             const token = localStorage.getItem('token');
             sessionStorage.setItem('id',this.id);
             const id=sessionStorage.getItem('id');
-            // console.log(id);
             const { data:res } = await this.$http.post('/api/teacher/xiangqing',
             {
                 id: id,
                 token: token
             })
-            console.log(res);
             sessionStorage.setItem('subject',res.data.map(o=>{return[o.Subject]}));
             sessionStorage.setItem('idShow',res.data.map(o=>{return[o.id]}));
             sessionStorage.setItem('class1',res.data.map(o=>{return[o.class]}));
             if(res.code === 200){
-        //         this.$message({
-        //         showClose: true,
-        //         message: '查询成功~',
-        //         type: 'success'
-        // });
                 this.DetailsForm.TeacherName = res.data[0].TeacherName;
                 this.DetailsFormTwo.TeacherAge = res.data[0].TeacherAge;
                 if(res.data[0].TeacherSex == 0){
@@ -241,7 +231,6 @@ data() {
                 this.DetailsFormFour.TeacherCollege = res.data[0].TFormCollege;
                 this.DetailsFormFour.TeacherSubject = res.data[0].Subject;
                 this.tableData = res.data;
-                // console.log(res.data[0].class);
                 if(res.data[0].ifPresident == 0){
                     this.DetailsFormFive.TeacherWhether = "不是";
                 } else {
@@ -251,25 +240,14 @@ data() {
             const num=sessionStorage.getItem('Number');
             const idShow=sessionStorage.getItem('idShow');
             const subject=sessionStorage.getItem('subject');
-            const class1=sessionStorage.getItem('class1');
-            // console.log(num);
-            // console.log(idShow);
-            // console.log(subject);
-            // console.log(class1);
             const { data:re } = await this.$http.post('/api/teacher/showav', {
                     subject: subject,
                     id: idShow,
                     num:num,
                     token: token
                 });
-                console.log(re.data.avg);
-                // var list =new Array(re.data+','+class1)
-                // console.log(list);
-                // this.list = re.data;
-                // var data = list.split(",")
                 if(re.code === 200){
                     this.input1 = re.data.avg
-                    // this.tableData = re.avg;
                 this.$message({
                 showClose: true,
                 message: '查询成功~',

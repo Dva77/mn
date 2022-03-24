@@ -303,26 +303,21 @@ export default {
         async getAllNumber() {
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.get('/api/college/allcollege?token=' + token);
-            // console.log(res.data);
             this.info = res.data
             },
         // 获取所有的学院信息
         async getAllInfo() {
             const token=localStorage.getItem('token');
-            // console.log(token);
             const { data:res } = await this.$http.get('/api/college/showall?token=' + token);
-            console.log(res);
             this.tableData = res.data;
         },
         // 根据下设学院名称查询
         async SearchCollege() {
-            // console.log(this.input);
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/college/show', {
                 CollegeName: this.input,
                 token: token
                 });
-            console.log(res.data);
             this.tableData = res.data;
         },
         // 刷新按钮
@@ -338,14 +333,11 @@ export default {
             center: true,
             roundButton: true
         }).then(async() => {
-            // console.log(item);
-            // console.log(this.tableData[item].CollegeName);
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/college/delete', {
                 CollegeName: item.CollegeName,
                 token: token
             })
-            // console.log(res);
             this.getAllInfo();
             if(res.code!==200){
                 return this.$message.error('删除失败!~')
@@ -364,21 +356,18 @@ export default {
         // 修改按钮
         handleRemove(item){
             this.modificationForm = true;
-            console.log(item);
             sessionStorage.setItem('id',item.id);
         },
         // 修改提交按钮
         async Alter() {
             const token = localStorage.getItem('token');
             const id = sessionStorage.getItem('id');
-            // console.log(id);
             const { data:res } = await this.$http.post('/api/college/modify', {
                 id: id,
                 CollegeName: this.formaAlter.collegeName,
                 President: this.formaAlter.presidentName,
                 token: token
             });
-            console.log(res);
             if(res.code === 200) {
             this.$message({
                 showClose: true,
@@ -396,8 +385,6 @@ export default {
         },
         // 添加提交按钮
         async Add() {
-            // console.log(this.formaAdd.collegeNames);
-            // console.log(this.formaAdd.presidentNames);
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/college/add',
             {
@@ -405,7 +392,6 @@ export default {
                 President: this.formaAdd.presidentNames,
                 token: token
             });
-            console.log(res);
             if(res.code == 200) {
             this.$message({
                 showClose: true,
@@ -442,32 +428,21 @@ export default {
         this.formaAdd.presidentNames = "";
         this.AddForm = false;
         } else {
-/*         this.$message({
-            message: '注意填完所有的信息哦~',
-            type: 'warning'
-        }); */
             return false;
                 }
             });
         },
         // 详情页面
         handleEdit(item){
-            // console.log(item);
             sessionStorage.setItem('idid',item.id);
             const id = sessionStorage.getItem('idid');
-            console.log(id);
-/*             const id = sessionStorage.getItem('id');
-            console.log(id); */
             this.$router.push({ path:'/universityDetail', query: { id: id}});
         },
         // 格式下载
         async FormatDown() {
-            // console.log(this.tableData);
-            // console.log(this.tableData.map(o=>{return[o.CollegeName]}));
             const token=localStorage.getItem('token');
             sessionStorage.setItem("CollegeName", this.tableData.map(o=>{return[o.CollegeName]}));
             const CollegeName = sessionStorage.getItem("CollegeName");
-            // console.log(CollegeName);
             window.open(
                 "http://schoolsys.wzhyuming.top/api/college/export?token="+token+'&CollegeName='+CollegeName
             );
@@ -485,7 +460,6 @@ export default {
             );
         },
         uploadSuccess(response, file, fileList) {
-            // console.log(response.code);
             if (response.code) {
                 this.$message({
                 message: '文件导入成功~',
@@ -496,7 +470,6 @@ export default {
         }
     },
         uploadFalse(response, file, fileList) {
-            // console.log(file);
             this.$message.error('抱歉,文件上传失败~');
     },
         // 上传前对文件的大小的判断
@@ -527,9 +500,7 @@ export default {
             this.businessType = "businessType不能为空~";
         }
     },
-        handleRemove1 (file, fileList) {
-            console.log(file, fileList);
-    },
+        handleRemove1 (file, fileList) {},
         handlePreview(file) {
             if (file.response.code) {
                 this.$message({

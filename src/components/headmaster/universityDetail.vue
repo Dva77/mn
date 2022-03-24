@@ -121,30 +121,7 @@
                     <dv-water-level-pond :config="config" />
                     </div>
                 </div>
-                    <!-- </dv-border-box-1> -->
                 <div class="divOne">班级男女人数比例</div>
-            <!-- <div style="width:100%">
-                <div style="width:50%;float:right">
-                    <dv-border-box-1>
-                <div class="pictureOne">
-                    <div class="chart-container">
-                    <dv-water-level-pond :config="config" />
-                    </div>
-                </div>
-                    </dv-border-box-1>
-                <div class="divOne">教师男女人数比例</div>
-                </div>
-                <div>
-                <div class="pictureTwo">{{number.student}}</div>
-                <div class="divTwo">学生男女人数比例</div>
-                </div>
-            </div> -->
-            <!-- <div>
-            <div>
-            <div class="pictureThree">{{}}</div>
-            <div class="divThree">学生人数各科目平均成绩柱状图</div>
-            </div>
-            </div> -->
         </el-dialog>
         <!-- 查看详情结束 -->
     </div>
@@ -190,7 +167,6 @@ export default {
                 id: id,
                 token: token
             });
-            // console.log(res);
             if(res.code === 200) {
             this.$message({
                 showClose: true,
@@ -206,13 +182,11 @@ export default {
         async getAllInfoTwo() {
             sessionStorage.setItem('id',this.id);
             const id=sessionStorage.getItem('id');
-            console.log(id);
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/college/allstudent', {
                 id: id,
                 token: token
             });
-            console.log(res);
             if(res.code === 200) {
             this.$message({
                 showClose: true,
@@ -234,7 +208,6 @@ export default {
                 id: id,
                 token: token
             });
-            // console.log(res);
             if(res.code === 200) {
             this.$message({
                 showClose: true,
@@ -251,13 +224,11 @@ export default {
             const token = localStorage.getItem('token');
             sessionStorage.setItem('id',this.id);
             const id=sessionStorage.getItem('id');
-            // console.log(id);
             const { data:res } = await this.$http.post('/api/college/showclass',
             {
                 id: id,
                 token: token
             })
-            console.log(res.data);
             if(res.code === 200){
             this.$message({
                 showClose: true,
@@ -291,16 +262,10 @@ export default {
         // 查看学生男女人数
         async LookPicture() {
             const id=sessionStorage.getItem('id');
-            // console.log(id);
             const token=localStorage.getItem('token');
             const { data:res } =await this.$http.post('/api/college/xclass?token='+token+'&id='+id);
-            console.log(res);
-            console.log(res.data.number);
             const { data:re } =await this.$http.post('/api/college/xclass1?token='+token+'&id='+id);
-            console.log(re);
-            console.log(re.data.number);
             const { config } = this;
-            console.log(config);
             this.config.data = [res.data.number];
             this.config = {...this.config};
         }

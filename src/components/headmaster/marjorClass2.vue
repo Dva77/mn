@@ -262,14 +262,12 @@ export default {
         async getAllNumber(){
             const token = localStorage.getItem('token');
             const { data:res } = await this.$http.get('/api/speciality/allsp?token=' + token);
-            // console.log(res);
             this.info = res.data;
         },
         // 获取所有的数据
         async getAllInfo() {
             const token = localStorage.getItem('token');
             const { data:res } = await this.$http.get('/api/speciality/showall?token=' + token);
-            console.log(res);
             this.tableData = res.data;
         },
         // 删除按钮
@@ -281,15 +279,11 @@ export default {
             center: true,
             roundButton: true
         }).then(async() => {
-            // console.log(item);
-            // console.log(item.SpName);
             const token=localStorage.getItem('token');
-            // const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/speciality/delete', {
                 SpName: item.SpName,
                 token: token
             })
-            console.log(res);
             if(res.code === 200){
                 this.getAllInfo();
                 this.$message({
@@ -309,21 +303,18 @@ export default {
         // 修改按钮
         handleRemove(item){
             this.modificationForm = true;
-            console.log(item.id);
             sessionStorage.setItem('Addid',item.id);
         },
         // 修改提交按钮
         async Alter() {
             const token = localStorage.getItem('token');
             const Addid = sessionStorage.getItem('Addid');
-            console.log(Addid);
             const { data:res } = await this.$http.post('/api/speciality/modify', {
                 id: Addid,
                 FormCollege: this.formaAlter.collegeName,
                 SpName: this.formaAlter.presidentName,
                 token: token
             });
-            console.log(res);
             if(res.code === 200) {
             this.$message({
             message: '修改成功~',
@@ -340,8 +331,6 @@ export default {
         },
         // 添加提交按钮
         async Add() {
-            console.log(this.formAdd.collegeNames);
-            console.log(this.formAdd.presidentNames);
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/speciality/add',
             {
@@ -349,14 +338,12 @@ export default {
                 FormCollege: this.formAdd.collegeNames,
                 token: token
             });
-            console.log(res);
             if(res.code == 200) {
             this.$message({
                 showClose: true,
                 message: '添加成功~',
                 type: 'success'
         });
-                // this.tableData.push(res.data);
                 this.getAllInfo();
             } else {
                 this.$message.error('抱歉，添加数据失败，请重新操作~');
@@ -374,10 +361,6 @@ export default {
         submitForm(formName) {
             this.$refs[formName].validate((valid) => {
         if (valid) {
-/*             this.$message({
-            message: '操作成功~',
-            type: 'success'
-        }); */
         // 修改
         this.formaAlter.collegeName = "";
         this.formaAlter.presidentName = "";
@@ -399,7 +382,6 @@ export default {
         handleEdit(item){
             sessionStorage.setItem('idid',item.id);
             const Detid = sessionStorage.getItem('idid');
-            console.log(Detid);
             this.$router.push({ path:'/marjorC', query: { Detid: Detid}});
         },
         // 刷新按钮
@@ -408,13 +390,11 @@ export default {
         },
         // 根据下设学院名称查询
         async SearchCollege() {
-            // console.log(this.input);
             const token=localStorage.getItem('token');
             const { data:res } = await this.$http.post('/api/speciality/show', {
                 SpName: this.input,
                 token: token
                 });
-            console.log(res.data);
             if( res.code === 200){
                 this.$message({
                 showClose: true,
