@@ -1,25 +1,6 @@
 <template>
     <div class="box">
         <div class="boxOne">
-            <!-- 搜索框开始 -->
-            <el-input
-                class="inputSearch"
-                v-model="input"
-                size="mini"
-                placeholder="根据名称、时间查询"
-            >
-            </el-input>
-            <!-- 搜索框结束 -->
-            <!-- 搜索按钮开始 -->
-            <el-button
-                size="mini"
-                class="SearchButton"
-                icon="el-icon-search"
-                type="primary"
-                circle
-            >
-            </el-button>
-            <!-- 搜索按钮结束 -->
             <div>
             <!-- 返回按钮结束 -->
             <el-button
@@ -87,13 +68,14 @@
         </div>
         <!-- 表格结束 -->
         <!-- 学院总数开始 -->
-        <div class="boxThree">
-        <span class="sumNum">专业总数 : num</span>
+        <div class="boxThree" :data="info">
+        <span class="sumNum">专业总数 : {{info}}</span>
         </div>
         <!-- 学院总数结束 -->
         <div class="boxFive">
         <el-pagination
             align="center"
+            small
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="currentPage"
@@ -107,6 +89,8 @@
         <div class="boxFour">
             <el-pagination
                 background
+                small
+                :pager-count="5"
                 align="center"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -121,11 +105,11 @@
         <!-- 查看详情开始 -->
         <el-dialog
             :visible.sync="dialogVisible"
-            width="95%"
+            width="80%"
             >
             <div>
                 <div class="pictureOne">
-                    {{}}
+                    <dv-conical-column-chart :config="config" style="width:100%"/>
                 </div>
                 <div class="divOne">学生人数各科目平均成绩柱状图</div>
             </div>
@@ -138,68 +122,68 @@
 export default {
     data() {
         return {
+        config:{
+                textColor: '#000',
+                data: [
+                {
+                name: '',
+                value: 55
+            },
+            {
+            name: '',
+            value: 90
+            },
+            {
+            name: '',
+            value: 71
+            },
+            {
+            name: '',
+            value: 66
+            },
+            {
+            name: '',
+            value: 80
+            }
+            ],
+            showValue: true
+            },
+        info:{},
         // 搜索输入框
         input: '',
          // 表格数据
-        tableData: [
-        {
-            StudentName: '计算机与软件学院',
-            StudentSex: '名字',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        {
-            StudentName: '信息与商务管理学院',
-            StudentSex: '...........',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        {
-            StudentName: '数字艺术与设计学院',
-            StudentSex: '名字',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        {
-            StudentName: 'xxxxxxxxxxxxx',
-            StudentSex: 'namebalbala',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        {
-            StudentName: '计算机与软件学院',
-            StudentSex: '名字',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        {
-            StudentName: '信息与商务管理学院',
-            StudentSex: '...........',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        {
-            StudentName: '数字艺术与设计学院',
-            StudentSex: '名字',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        {
-            StudentName: 'xxxxxxxxxxxxx',
-            StudentSex: 'namebalbala',
-            StudentAge:'1',
-            SNumber:'203811111111'
-        },
-        ],
+        tableData: [],
         // 分页
         currentPage: 1,
         pageSize:5,
         dialogVisible: false
         }
     },
+        created() {
+        this.getAllInfo();
+        this.getAllNumber();
+    },
     methods:{
+        // 获取专业总数
+        async getAllNumber(){
+            const token = localStorage.getItem('token');
+            const { data:res } = await this.$http.get('/api/speciality/allsp?token=' + token);
+            // console.log(res);
+            this.info = res.data;
+        },
+        // 获取所有的数据
+        async getAllInfo() {
+            const token = localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/speciality/xiangqing2?token=' + token);
+            console.log(res);
+            this.tableData = res.data;
+            this.$message({
+            message: '操作成功~',
+            type: 'success'
+        });
+        },
         hReturn(){
-            this.$router.push('/hProfessionalClass');
+            this.$router.push('/marjorClass2');
         },
                 // 分页
         handleSizeChange(val) {

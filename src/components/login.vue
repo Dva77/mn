@@ -8,7 +8,7 @@
         <h2>登录</h2>
         <el-form :rules="rules" class="login-form" ref="form" :model="loginform" @keyup.enter.native="login">
           <el-form-item prop="username">
-            <el-input placeholder="请输入账号" type="text" v-model="loginform.username"></el-input>
+            <el-input placeholder="请输入账号" type="text" v-model="loginform.account"></el-input>
           </el-form-item>
           <el-form-item prop="password">
             <el-input placeholder="请输入密码" type="password" v-model="loginform.password" show-password></el-input>
@@ -16,8 +16,8 @@
           <el-form-item>
             <el-button :loading="loading" type="primary" style="width: 100%" @click="login">登 录</el-button>
           </el-form-item>
-           <el-form-item class="forget">
-               <router-link
+          <el-form-item class="forget">
+              <router-link
             :to="{ path: '/forget'}"
             replace
           >忘记密码？</router-link>
@@ -27,6 +27,7 @@
     </div>
     <!-- 波浪区域 -->
     <div>
+
       <!-- svg形状 -->
       <svg class="waves" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
         <!-- 形状容器 -->
@@ -50,19 +51,28 @@ export default {
   data () {
     return {
       loginform: {
-        username: '',
+        account: '',
         password: ''
       },
       loading: false,
       rules: {
-        username: [{ required: true, message: '请输入用户名', trigger: 'biur' }],
+        account: [{ required: true, message: '请输入用户名', trigger: 'biur' }],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
       }
     }
   },
   methods:{
-    login(){
-       this.$router.push("./home");
+    async login(){
+      const {data:res} =await this.$http.post('/api/users/login',this.loginform)
+      if(res.code == 200){
+        this.$message.success("登录成功！")
+        this.$router.push('/welcome')
+        localStorage.setItem('token',res.data.token);
+        // localStorage.setItem('account',res.data[1]);
+      }
+      if(res.code == 100){
+      this.$message.error("登录失败！")
+    }
     }
   },
   computed: {
@@ -92,45 +102,52 @@ export default {
 .forget {
     height: 0;
 }
+
 .forget a {
   text-decoration: none;
   color: #74b3f1;
   float: right;
 }
+
 .header {
-position: relative;
-background: linear-gradient(60deg,rgba(84,58,183,1) 0%, rgba(0,172,193,1) 100%);
-color: wheat;
+  position: relative;
+  background: linear-gradient(60deg,rgba(84,58,183,1) 0%, rgba(0,172,193,1) 100%);
+  color: wheat;
 }
+
 .lnner-header {
-height: 500px;
-width: 100%;
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
+  height: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
+
 h1{
- text-align: center;
-      font-family: 'Lato','sans-serif';
-      font-weight: 300;
-      /* font-spacing:2px; */
-      font-size: 48px;
+  text-align: center;
+  font-family: 'Lato','sans-serif';
+  font-weight: 300;
+  /* font-spacing:2px; */
+  font-size: 48px;
 }
+
 h2{
     text-align: center;
-      font-family: 'Lato','sans-serif';
-      font-weight: 300;
-      /* font-spacing:2px; */
-      font-size: 28px;
+    font-family: 'Lato','sans-serif';
+    font-weight: 300;
+    /* font-spacing:2px; */
+    font-size: 28px;
 }
+
 .login-form{
-     margin: 0 auto;
-      width: 300px;
-      padding-top: 30px;
+    margin: 0 auto;
+    width: 300px;
+    padding-top: 30px;
 }
+
 .waves {
-     position: relative;
+    position: relative;
     width: 100%;
     height: 15vh;
     margin-bottom: -7px;
@@ -139,27 +156,33 @@ h2{
     /* 最大值 */
     max-height: 150px;
 }
+
 .parallax>use {
-     animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+    animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
 }
+
 .parallax>use:nth-child(1) {
     /* 延迟 2s 执行 */
-      animation-delay: -2s;
-      /* 7s 内 执行完毕 */
-      animation-duration: 7s;
+    animation-delay: -2s;
+    /* 7s 内 执行完毕 */
+    animation-duration: 7s;
 }
+
 .parallax>use:nth-child(2) {
       animation-delay: -3s;
       animation-duration: 10s;
     }
+
     .parallax>use:nth-child(3) {
       animation-delay: -4s;
       animation-duration: 13s;
     }
+
     .parallax>use:nth-child(4) {
       animation-delay: -5s;
       animation-duration: 20s;
     }
+
 @keyframes move-forever {
     0%{
         transform: translate3d(-90px,0,0);
@@ -168,6 +191,7 @@ h2{
         transform: translate3d(85px,0,0);
     }
 }
+
 @media (max-width:768px) {
     .waves{
         height: 40px;
@@ -177,16 +201,20 @@ h2{
         font-size: 24px;
     }
 }
+
 .el-input__inner{
-     background-color: rgba(255,255,255,0.7);
-  border-radius: 0;
-  border: 1px solid #0094ff;
-  color: rgba(0, 0, 0, .7)
+    background-color: rgba(255,255,255,0.7);
+    border-radius: 0;
+    border: 1px solid #0094ff;
+    color: rgba(0, 0, 0, .7);
 }
+
 .el-input__inner::placeholder {
   color: rgba(0, 0, 0, .3)
 }
+
 .el-button {
   border-radius: 4px;
 }
 </style>
+

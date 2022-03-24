@@ -7,7 +7,7 @@
                 size="mini"
                 class="inputSearch"
                 v-model="input"
-                placeholder="根据下设学院名称查询"
+                placeholder="根据下设学院名查询"
             >
             </el-input>
             <!-- 搜索按钮开始 -->
@@ -17,41 +17,53 @@
                 icon="el-icon-search"
                 type="primary"
                 circle
+                @click="SearchCollege()"
             ></el-button>
             <!-- 搜索按钮结束 -->
-            </div>
-            <!-- 搜索框结束 -->
-            <div class="divBtn">
-            <!-- 一键导入按钮开始 -->
             <el-button
             size="mini"
             type="primary"
-            class="btnOne"
-            >
-            一键导入
-            </el-button>
-            <!-- 一键导入按钮结束 -->
+            plain
+            @click="refresh()"
+            >搜索重置</el-button>
+            </div>
+            <!-- 搜索框结束 -->
+            <div class="divBtn">
             <!-- 格式下载开始 -->
             <el-button
             size="mini"
             type="primary"
             class="btnTwo"
+            @click="FormatDown()"
+            icon="el-icon-download"
             >
             格式下载
             </el-button>
             <!-- 格式下载结束 -->
-            </div>
-            <div class="addBtn">
-            <!-- 添加按钮开始 -->
+            <!-- 一键导入按钮开始 -->
+            <el-upload
+                class="upload-demo"
+                ref="upload"
+                :action="uploadUrl()"
+                :data="uploadData"
+                name="file"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove1"
+                :file-list="fileList"
+                :on-error="uploadFalse"
+                :on-success="uploadSuccess"
+                :before-upload="beforeAvatarUpload"
+            >
             <el-button
             size="mini"
             type="primary"
-            plain
-            @click="handleAdd()"
+            class="btnOne"
+            icon="el-icon-s-promotion"
             >
-            添加
+            一键导入
             </el-button>
-            <!-- 添加按钮结束 -->
+            </el-upload>
+            <!-- 一键导入按钮结束 -->
             </div>
         </div>
         <!-- 表格开始 -->
@@ -66,14 +78,14 @@
             <el-table-column
                 align="center"
                 label="下设学院"
-                prop="LowerSchool"
+                prop="CollegeName"
                 min-width="200"
             >
             </el-table-column>
             <el-table-column
                 align="center"
                 label="院长名称"
-                prop="DeanName"
+                prop="President"
                 min-width="200"
             >
             </el-table-column>
@@ -86,19 +98,20 @@
             <el-button
                 size="mini"
                 type="warning"
-                @click="handleEdit(scope.$index, scope.row)">
+                @click="handleEdit(scope.row)">
                 详 情
             </el-button>
             <el-button
                 size="mini"
                 type="primary"
-                @click="handleRemove(scope.$index, scope.row)">
+                @click="handleRemove(scope.row)">
                 修 改
             </el-button>
             <el-button
                 size="mini"
                 type="danger"
-                @click="handleDelete(scope.$index, scope.row)">
+                icon="el-icon-delete"
+                @click="handleDelete(scope.row)">
                 删 除
             </el-button>
             </template>
@@ -107,12 +120,36 @@
         </div>
         <!-- 表格结束 -->
         <!-- 学院总数开始 -->
-        <div class="boxThree">
-        <span class="sumNum">学院总数 : num</span>
+        <div class="boxThree" :data="info">
+        <!-- 添加按钮开始 -->
+            <el-button
+            size="mini"
+            type="primary"
+            plain
+            class="el-icon-edit"
+            style="margin-left: 5%;"
+            @click="handleAdd()"
+            >
+            添加
+            </el-button>
+            <!-- 添加按钮结束 -->
+            <!-- 导出模板按钮开始 -->
+            <el-button
+                size="mini"
+                type="primary"
+                plain
+                @click="out()"
+            >
+            导出模板
+            </el-button>
+            <!-- 导出模板按钮结束 -->
         </div>
+        <span class="sumNum">学院总数 : {{info}}</span>
         <!-- 学院总数结束 -->
+        <!-- 分页开始 -->
         <div class="boxFive">
         <el-pagination
+            small
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="currentPage"
@@ -124,10 +161,11 @@
             >
         </el-pagination>
         </div>
-        <!-- 分页开始 -->
         <div class="boxFour">
             <el-pagination
                 background
+                small
+                :pager-count="5"
                 align="center"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -172,7 +210,7 @@
                 <el-button
                 type="primary"
                 style="display:block;margin:0 auto"
-                @click="submitForm('formaAlter')">提 交</el-button>
+                @click="Alter(),submitForm('formaAlter')">提 交</el-button>
             </div>
         </el-dialog>
         <!-- 修改按钮的弹窗结束 -->
@@ -185,13 +223,13 @@
             <el-form
             :model="formaAdd"
             :rules="DialogRulesTwo"
-            ref="formAdd"
+            ref="formaAdd"
             >
-                <el-form-item
+            <el-form-item
                 label="学院名称"
                 :label-width="formLabelWidth"
                 prop="collegeNames"
-                >
+            >
                     <el-input
                     v-model="formaAdd.collegeNames"
                     ></el-input>
@@ -200,7 +238,7 @@
                 label="院长名称" :label-width="formLabelWidth"
                 prop="presidentNames"
                 >
-                    <el-input
+                <el-input
                     v-model="formaAdd.presidentNames"
                     ></el-input>
                 </el-form-item>
@@ -209,7 +247,7 @@
                 <el-button
                 type="primary"
                 style="display:block;margin:0 auto"
-                @click="submitForm('formAdd')">提 交</el-button>
+                @click="Add(),submitForm('formaAdd')">提 交</el-button>
             </div>
         </el-dialog>
         <!-- 添加按钮的弹窗结束 -->
@@ -220,43 +258,13 @@
 export default {
     data() {
         return {
+            fileList:[],
+        uploadData:{},
+            info:{},
         // 搜索输入框
         input: '',
         // 表格数据
-        tableData: [
-        {
-            LowerSchool: '计算机与软件学院',
-            DeanName: '名字'
-        },
-        {
-            LowerSchool: '信息与商务管理学院',
-            DeanName: '...........'
-        },
-        {
-            LowerSchool: '数字艺术与设计学院',
-            DeanName: '名字'
-        },
-        {
-            LowerSchool: 'xxxxxxxxxxxxx',
-            DeanName: 'namebalbala'
-        },
-        {
-            LowerSchool: '计算机与软件学院',
-            DeanName: '名字'
-        },
-        {
-            LowerSchool: '信息与商务管理学院',
-            DeanName: '...........'
-        },
-        {
-            LowerSchool: '数字艺术与设计学院',
-            DeanName: '名字'
-        },
-        {
-            LowerSchool: 'xxxxxxxxxxxxx',
-            DeanName: 'namebalbala'
-        },
-        ],
+        tableData: [],
         // 分页
         currentPage: 1,
         pageSize:5,
@@ -286,16 +294,62 @@ export default {
         }
         }
     },
+    created() {
+        this.getAllNumber();
+        this.getAllInfo();
+    },
         methods: {
+        // 获取所有学院的数量
+        async getAllNumber() {
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.get('/api/college/allcollege?token=' + token);
+            // console.log(res.data);
+            this.info = res.data
+            },
+        // 获取所有的学院信息
+        async getAllInfo() {
+            const token=localStorage.getItem('token');
+            // console.log(token);
+            const { data:res } = await this.$http.get('/api/college/showall?token=' + token);
+            console.log(res);
+            this.tableData = res.data;
+        },
+        // 根据下设学院名称查询
+        async SearchCollege() {
+            // console.log(this.input);
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/college/show', {
+                CollegeName: this.input,
+                token: token
+                });
+            console.log(res.data);
+            this.tableData = res.data;
+        },
+        // 刷新按钮
+        refresh() {
+            this.$router.go(0);
+        },
         // 删除按钮
-        handleDelete(){
+        async handleDelete(item){
             this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning',
             center: true,
             roundButton: true
-        }).then(() => {
+        }).then(async() => {
+            // console.log(item);
+            // console.log(this.tableData[item].CollegeName);
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/college/delete', {
+                CollegeName: item.CollegeName,
+                token: token
+            })
+            // console.log(res);
+            this.getAllInfo();
+            if(res.code!==200){
+                return this.$message.error('删除失败!~')
+            }
             this.$message({
             type: 'success',
             message: '删除成功!~'
@@ -308,12 +362,60 @@ export default {
         });
         },
         // 修改按钮
-        handleRemove(){
-            this.modificationForm = true
+        handleRemove(item){
+            this.modificationForm = true;
+            console.log(item);
+            sessionStorage.setItem('id',item.id);
+        },
+        // 修改提交按钮
+        async Alter() {
+            const token = localStorage.getItem('token');
+            const id = sessionStorage.getItem('id');
+            // console.log(id);
+            const { data:res } = await this.$http.post('/api/college/modify', {
+                id: id,
+                CollegeName: this.formaAlter.collegeName,
+                President: this.formaAlter.presidentName,
+                token: token
+            });
+            console.log(res);
+            if(res.code === 200) {
+            this.$message({
+                showClose: true,
+                message: '修改成功~',
+                type: 'success'
+        });
+                this.getAllInfo();
+            } else {
+                this.$message.error('抱歉，修改数据失败，请重新操作~')
+            }
         },
         // 添加按钮
         handleAdd(){
-            this.AddForm = true
+            this.AddForm = true;
+        },
+        // 添加提交按钮
+        async Add() {
+            // console.log(this.formaAdd.collegeNames);
+            // console.log(this.formaAdd.presidentNames);
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/college/add',
+            {
+                CollegeName: this.formaAdd.collegeNames,
+                President: this.formaAdd.presidentNames,
+                token: token
+            });
+            console.log(res);
+            if(res.code == 200) {
+            this.$message({
+                showClose: true,
+                message: '添加成功~',
+                type: 'success'
+        });
+                this.tableData.push(res.data);
+            } else {
+                this.$message.error('抱歉，添加数据失败，请重新操作~');
+            }
         },
         // 分页
         handleSizeChange(val) {
@@ -327,31 +429,118 @@ export default {
         submitForm(formName) {
             this.$refs[formName].validate((valid) => {
         if (valid) {
-            this.$message({
+/*             this.$message({
             message: '操作成功~',
             type: 'success'
-        });
+        }); */
         // 修改
         this.formaAlter.collegeName = "";
         this.formaAlter.presidentName = "";
-        this.modificationForm = false
+        this.modificationForm = false;
         // 添加
         this.formaAdd.collegeNames = "";
         this.formaAdd.presidentNames = "";
-        this.AddForm = false
+        this.AddForm = false;
         } else {
-        this.$message({
+/*         this.$message({
             message: '注意填完所有的信息哦~',
             type: 'warning'
-        });
+        }); */
             return false;
                 }
             });
         },
         // 详情页面
-        handleEdit(){
-            this.$router.push('/hSchoolDetail');
+        handleEdit(item){
+            // console.log(item);
+            sessionStorage.setItem('idid',item.id);
+            const id = sessionStorage.getItem('idid');
+            console.log(id);
+/*             const id = sessionStorage.getItem('id');
+            console.log(id); */
+            this.$router.push({ path:'/universityDetail', query: { id: id}});
+        },
+        // 格式下载
+        async FormatDown() {
+            // console.log(this.tableData);
+            // console.log(this.tableData.map(o=>{return[o.CollegeName]}));
+            const token=localStorage.getItem('token');
+            sessionStorage.setItem("CollegeName", this.tableData.map(o=>{return[o.CollegeName]}));
+            const CollegeName = sessionStorage.getItem("CollegeName");
+            // console.log(CollegeName);
+            window.open(
+                "http://schoolsys.wzhyuming.top/api/college/export?token="+token+'&CollegeName='+CollegeName
+            );
+        },
+        // 导出模板导出按钮
+        async out(){
+            const token=localStorage.getItem('token');
+            window.open("http://schoolsys.wzhyuming.top/api/college/export_moban?token="+token);
+        },
+        // 格式下载开始
+        uploadUrl(){
+            const token=localStorage.getItem('token');
+            return (
+                "http://schoolsys.wzhyuming.top/api/college/import" + "?token=" +token
+            );
+        },
+        uploadSuccess(response, file, fileList) {
+            // console.log(response.code);
+            if (response.code) {
+                this.$message({
+                message: '文件导入成功~',
+                type: 'success'
+        });
+            } else {
+                this.$message.error('抱歉,文件导入失败~');
         }
+    },
+        uploadFalse(response, file, fileList) {
+            // console.log(file);
+            this.$message.error('抱歉,文件上传失败~');
+    },
+        // 上传前对文件的大小的判断
+        beforeAvatarUpload(file) {
+            const extension = file.name.split(".")[1] === "xls";
+            const extension2 = file.name.split(".")[1] === "xlsx";
+            const isLt2M = file.size / 1024 / 1024 < 10;
+            if (!extension && !extension2 && !extension3 && !extension4) {
+                this.$message({
+                message: '上传模板只能是 xls、xlsx 格式~',
+                type: 'warning'
+        });
+        }
+            if (!isLt2M) {
+                this.$message({
+                message: '上传模板大小不能超过 10MB~',
+                type: 'warning'
+        });
+        }
+            return extension || extension2 || extension3 || (extension4 && isLt2M);
+    },
+        submitUpload() {
+            if (this.businessType != null) {
+            //触发组件的action
+            this.$refs.upload.submit();
+        }
+            if (this.businessType == null) {
+            this.businessType = "businessType不能为空~";
+        }
+    },
+        handleRemove1 (file, fileList) {
+            console.log(file, fileList);
+    },
+        handlePreview(file) {
+            if (file.response.code) {
+                this.$message({
+                message: '此文件导入成功~',
+                type: 'success'
+        });
+            } else {
+                this.$message.error('抱歉,文件导入失败~');
+        }
+    }
+    // 格式下载结束
     },
 }
 </script>
@@ -386,6 +575,7 @@ export default {
 
 .sumNum {
     padding-left: 5%;
+    margin: 1%;
 }
 
 /* 搜索框 */
@@ -393,7 +583,7 @@ export default {
     border-radius: 30px;
     height: 40.8px;
     padding-left: 5%;
-    width: 60%;
+    width: 50%;
 }
 
 /* 搜索框边角 */
@@ -408,19 +598,24 @@ export default {
 
 /* 两种按钮 */
 .divBtn {
-    padding: 1%;
-    padding-top: 1%;
+    width:70%;
+    /* padding-top: 1%; */
     padding-left: 5%;
+    margin-bottom:5px;
 }
 
 /* 添加按钮 */
-.addBtn {
+/* .addBtn {
     padding-top: 1%;
     padding-left: 5%;
-}
+} */
 
 /* 修改 表格单行的颜色 */
 ::v-deep .el-table tr {
 	background-color: #F4F5FC;
+}
+
+.btnTwo {
+    margin-bottom:5px;
 }
 </style>

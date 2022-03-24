@@ -7,7 +7,7 @@
                 class="inputSearch"
                 size="mini"
                 v-model="input"
-                placeholder="根据名称、时间查询"
+                placeholder="根据专业班级名称查询"
             >
             </el-input>
             <!-- 搜索按钮开始 -->
@@ -17,8 +17,15 @@
                 icon="el-icon-search"
                 type="primary"
                 circle
+                @click="SearchCollege()"
             ></el-button>
             <!-- 搜索按钮结束 -->
+            <el-button
+                size="mini"
+                type="primary"
+                plain
+                @click="refresh()"
+            >重置</el-button>
         </div>
             <!-- 搜索框结束 -->
             <!-- 添加按钮开始 -->
@@ -27,6 +34,7 @@
                 type="primary"
                 size="mini"
                 plain
+                class="el-icon-edit"
                 @click="btnAdd()"
             >
             添加
@@ -46,21 +54,21 @@
             <el-table-column
                 align="center"
                 label="所属学院"
-                prop="BelongSchool"
+                prop="CollegeName"
                 min-width="200"
             >
             </el-table-column>
             <el-table-column
                 align="center"
                 label="专业班级"
-                prop="ProfessionalClass"
+                prop="SpName"
                 min-width="200"
             >
             </el-table-column>
             <el-table-column
                 align="center"
                 label="人数"
-                prop="ProfessionalNumber"
+                prop="num"
                 min-width="150"
             >
             </el-table-column>
@@ -73,19 +81,20 @@
             <el-button
                 size="mini"
                 type="warning"
-                @click="handleEdit(scope.$index, scope.row)">
+                @click="handleEdit(scope.row)">
                 详 情
             </el-button>
             <el-button
                 size="mini"
                 type="primary"
-                @click="handleRemove(scope.$index, scope.row)">
+                @click="handleRemove(scope.row)">
                 修 改
             </el-button>
             <el-button
                 size="mini"
                 type="danger"
-                @click="handleDelete(scope.$index, scope.row)">
+                icon="el-icon-delete"
+                @click="handleDelete(scope.row)">
                 删 除
             </el-button>
             </template>
@@ -94,13 +103,14 @@
         </div>
         <!-- 表格结束 -->
         <!-- 专业总数开始 -->
-        <div class="boxThree">
-        <span class="sumNum">专业总数 : num</span>
+        <div class="boxThree" :data="info">
+        <span class="sumNum">专业总数 : {{info}}</span>
         </div>
         <!-- 专业总数结束 -->
         <div class="boxFive">
         <el-pagination
         align="center"
+            small
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="currentPage"
@@ -114,6 +124,8 @@
         <div class="boxFour">
             <el-pagination
                 background
+                small
+                :pager-count="5"
                 align="center"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -158,7 +170,7 @@
                 <el-button
                 type="primary"
                 style="display:block;margin:0 auto"
-                @click="submitForm('form')">提 交</el-button>
+                @click="Alter(),submitForm('form')">提 交</el-button>
             </div>
         </el-dialog>
         <!-- 修改按钮的弹窗结束 -->
@@ -195,7 +207,7 @@
                 <el-button
                 type="primary"
                 style="display:block;margin:0 auto"
-                @click="submitForm('formAdd')">提 交</el-button>
+                @click="Add(),submitForm('formAdd')">提 交</el-button>
             </div>
         </el-dialog>
         <!-- 添加按钮的弹窗结束 -->
@@ -206,51 +218,11 @@
 export default {
     data() {
         return {
+        info:{},
         // 搜索输入框
         input: '',
         // 表格数据
-        tableData: [
-        {
-            BelongSchool: '计算机与软件学院',
-            ProfessionalClass: '名字',
-            ProfessionalNumber:'23'
-        },
-        {
-            BelongSchool: '信息与商务管理学院',
-            ProfessionalClass: '...........',
-            ProfessionalNumber:'23'
-        },
-        {
-            BelongSchool: '数字艺术与设计学院',
-            ProfessionalClass: '名字',
-            ProfessionalNumber:'23'
-        },
-        {
-            BelongSchool: 'xxxxxxxxxxxxx',
-            ProfessionalClass: 'namebalbala',
-            ProfessionalNumber:'23'
-        },
-        {
-            BelongSchool: '计算机与软件学院',
-            ProfessionalClass: '名字',
-            ProfessionalNumber:'23'
-        },
-        {
-            BelongSchool: '信息与商务管理学院',
-            ProfessionalClass: '...........',
-            ProfessionalNumber:'23'
-        },
-        {
-            BelongSchool: '数字艺术与设计学院',
-            ProfessionalClass: '名字',
-            ProfessionalNumber:'23'
-        },
-        {
-            BelongSchool: 'xxxxxxxxxxxxx',
-            ProfessionalClass: 'namebalbala',
-            ProfessionalNumber:'23'
-        },
-        ],
+        tableData: [],
         // 分页
         currentPage: 1,
         pageSize:6,
@@ -278,23 +250,55 @@ export default {
         DialogRulesTwo:{
             collegeNames:[{required:true,message:"注意学院名称不能为空呐",trigger:"blur"}],
             presidentNames:[{required:true,message:"注意院长名称不能为空呐",trigger:"blur"}]
-        },
         }
+    }
+},
+    created() {
+        this.getAllInfo();
+        this.getAllNumber();
     },
         methods: {
+        // 获取专业总数
+        async getAllNumber(){
+            const token = localStorage.getItem('token');
+            const { data:res } = await this.$http.get('/api/speciality/allsp?token=' + token);
+            // console.log(res);
+            this.info = res.data;
+        },
+        // 获取所有的数据
+        async getAllInfo() {
+            const token = localStorage.getItem('token');
+            const { data:res } = await this.$http.get('/api/speciality/showall?token=' + token);
+            console.log(res);
+            this.tableData = res.data;
+        },
         // 删除按钮
-        handleDelete(){
+        async handleDelete(item){
             this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning',
             center: true,
             roundButton: true
-        }).then(() => {
-            this.$message({
-            type: 'success',
-            message: '删除成功!~'
+        }).then(async() => {
+            // console.log(item);
+            // console.log(item.SpName);
+            const token=localStorage.getItem('token');
+            // const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/speciality/delete', {
+                SpName: item.SpName,
+                token: token
+            })
+            console.log(res);
+            if(res.code === 200){
+                this.getAllInfo();
+                this.$message({
+                type: 'success',
+                message: '删除成功!~'
             });
+            } else {
+                this.$message.error('删除失败!~');
+            }
         }).catch(() => {
             this.$message({
             type: 'info',
@@ -303,12 +307,60 @@ export default {
         });
         },
         // 修改按钮
-        handleRemove(){
-            this.modificationForm = true
+        handleRemove(item){
+            this.modificationForm = true;
+            console.log(item.id);
+            sessionStorage.setItem('Addid',item.id);
+        },
+        // 修改提交按钮
+        async Alter() {
+            const token = localStorage.getItem('token');
+            const Addid = sessionStorage.getItem('Addid');
+            console.log(Addid);
+            const { data:res } = await this.$http.post('/api/speciality/modify', {
+                id: Addid,
+                FormCollege: this.formaAlter.collegeName,
+                SpName: this.formaAlter.presidentName,
+                token: token
+            });
+            console.log(res);
+            if(res.code === 200) {
+            this.$message({
+            message: '修改成功~',
+            type: 'success'
+        });
+                this.getAllInfo();
+            } else {
+                this.$message.error('抱歉，修改数据失败，请重新操作~')
+            }
         },
         // 添加按钮
         btnAdd(){
             this.AddForm = true
+        },
+        // 添加提交按钮
+        async Add() {
+            console.log(this.formAdd.collegeNames);
+            console.log(this.formAdd.presidentNames);
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/speciality/add',
+            {
+                SpName: this.formAdd.presidentNames,
+                FormCollege: this.formAdd.collegeNames,
+                token: token
+            });
+            console.log(res);
+            if(res.code == 200) {
+            this.$message({
+                showClose: true,
+                message: '添加成功~',
+                type: 'success'
+        });
+                // this.tableData.push(res.data);
+                this.getAllInfo();
+            } else {
+                this.$message.error('抱歉，添加数据失败，请重新操作~');
+            }
         },
         // 分页
         handleSizeChange(val) {
@@ -318,14 +370,14 @@ export default {
         handleCurrentChange(val) {
         this.currentPage=val;
         },
-        // 修改弹窗提交按钮
+        // 修改+弹窗提交按钮
         submitForm(formName) {
             this.$refs[formName].validate((valid) => {
         if (valid) {
-            this.$message({
+/*             this.$message({
             message: '操作成功~',
             type: 'success'
-        });
+        }); */
         // 修改
         this.formaAlter.collegeName = "";
         this.formaAlter.presidentName = "";
@@ -344,9 +396,40 @@ export default {
             });
         },
         // 详情页面
-        handleEdit(){
-            this.$router.push('/hPC');
-        }
+        handleEdit(item){
+            sessionStorage.setItem('idid',item.id);
+            const Detid = sessionStorage.getItem('idid');
+            console.log(Detid);
+            this.$router.push({ path:'/marjorC', query: { Detid: Detid}});
+        },
+        // 刷新按钮
+        refresh() {
+            this.$router.go(0);
+        },
+        // 根据下设学院名称查询
+        async SearchCollege() {
+            // console.log(this.input);
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/speciality/show', {
+                SpName: this.input,
+                token: token
+                });
+            console.log(res.data);
+            if( res.code === 200){
+                this.$message({
+                showClose: true,
+                message: '查询成功~',
+                type: 'success'
+        });
+                this.tableData = res.data;
+            } else {
+                this.$message({
+                    showClose: true,
+                    message: '查询失败~',
+                    type: 'error'
+        });
+            }
+        },
     },
 }
 </script>

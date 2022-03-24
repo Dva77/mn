@@ -4,7 +4,7 @@
         <el-form :rules="forgetRules" :model="forgetForm" >
             <h2 class="forgetTitle">忘记密码</h2>
             <el-form-item prop="email">
-                <el-input type="text" auto-complete="false" v-model="forgetForm.email" placeholder="请输入邮箱"></el-input>
+                <el-input type="text" auto-complete="false" v-model="forgetForm.account" placeholder="请输入邮箱"></el-input>
             </el-form-item>
             <el-form-item prop="password">
                 <el-input type="password" auto-complete="false" v-model="forgetForm.password" placeholder="请输入密码" show-password></el-input>
@@ -12,11 +12,15 @@
             <el-form-item prop="confirm">
                 <el-input type="password" auto-complete="false" v-model="forgetForm.confirm" placeholder="请确认密码" show-password></el-input>
             </el-form-item>
+           
             <el-form-item>
-                <el-button type="info" style="width:100%" @click="backLogin">返回登录</el-button>
+                <el-button type="primary" style="width:100%" @click="send">1.发生邮箱验证</el-button>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" style="width:100%" @click="send">发生验证</el-button>
+                <el-button type="primary" style="width:100%" @click="fixpassword">2.确认修改密码</el-button>
+            </el-form-item>
+             <el-form-item>
+                <el-button type="info" style="width:100%" @click="backLogin">返回登录</el-button>
             </el-form-item>
         </el-form>
     </div>
@@ -39,12 +43,12 @@ export default {
     }
         return{
             forgetForm:{
-                email:'',
+                account:'',
                 password:'',
                 confirm:''
             },
             forgetRules:{
-        email: [{ required: true, message: "请输入邮箱", trigger: "biur" },
+        account: [{ required: true, message: "请输入邮箱", trigger: "blur" },
          { validator: checkEmail, trigger: 'blur' }],
         password: [{ required: true, message: "请输入密码", trigger: "blur" }],
         confirm: [{ required: true, message: "请确认密码", trigger: "blur" }],
@@ -55,8 +59,24 @@ export default {
         backLogin(){
             this.$router.push("./login");
         },
-        send(){
-            this.$router.push("./login");
+        async fixpassword(){
+          const{data:res} = await this.$http.post('/api/users/modify',{account:this.forgetForm.account,password:this.forgetForm.password})
+          console.log(this.forgetForm.account);
+          console.log(this.forgetForm.password);
+          console.log(res);
+          if(res.code == 200){
+             this.$message.success("修改成功！") 
+             this.$router.push('/login')
+          }
+           if(res.code == 100){
+           this.$message.error("修改失败！")
+         }
+        },
+        async send(){
+            // this.$router.push("./login");
+            console.log(this.forgetForm.account);
+           const{data:res} = await this.$http.post('/api/users/sendmail', {account:this.forgetForm.account})
+           console.log(res);
         }
     }
 }

@@ -85,18 +85,18 @@
 
             <el-submenu index="/university">
               <template slot="title">
-                <i class="el-icon-user"></i>
+                <i class="el-icon-s-custom"></i>
                 <span>校长</span>
               </template>
                <el-menu-item index="/university">
                 <template slot="title">
-                  <i class="el-icon-menu"></i>
+                  <i class="el-icon-school"></i>
                   <span>学校</span>
                 </template>
               </el-menu-item>
               <el-menu-item index="/hTeacher">
                 <template slot="title">
-                  <i class="el-icon-menu"></i>
+                  <i class="el-icon-reading"></i>
                   <span>教师</span>
                 </template>
               </el-menu-item>
@@ -141,7 +141,7 @@ export default {
 <style scoped>
 .container {
   height: 100%;
-    overflow: scroll;
+  overflow: scroll;
 }
 
 .home-container {
@@ -173,6 +173,7 @@ export default {
 }
 
 .el-main {
+  padding: 5px;
   background-color: #eaedf1;
 }
 .el-container.is-vertical {

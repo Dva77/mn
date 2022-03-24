@@ -46,14 +46,14 @@
             <el-table-column
                 align="center"
                 label="下设专业班级"
-                prop="professionalClasses"
+                prop="ClassName"
                 min-width="200"
             >
             </el-table-column>
             <el-table-column
                 align="center"
                 label="学生人数"
-                prop="StudentNumber"
+                prop="Number"
                 min-width="200"
             >
             </el-table-column>
@@ -65,7 +65,7 @@
             <el-button
                 size="mini"
                 type="primary"
-                @click="dialogVisible = true">
+                @click="LookPicture(),dialogVisible = true">
                 查 看 图 表
             </el-button>
             </el-table-column>
@@ -73,14 +73,16 @@
         </div>
         <!-- 表格结束 -->
         <!-- 学院总数开始 -->
-        <div class="boxThree">
-        <span class="sumNum">专业总数 : num</span>
-        <span class="sumNum">学生总数 : num</span>
-        <span class="sumNum">教师总数 : num</span>
+        <div class="boxThree" :data="info">
+        <span class="sumNum">专业总数 : {{info.One}}</span>
+        <span class="sumNum">学生总数 : {{info.Two}}</span>
+        <span class="sumNum">教师总数 : {{info.Three}}</span>
         </div>
         <!-- 学院总数结束 -->
+        <!-- 分页开始 -->
         <div class="boxFive">
         <el-pagination
+            small
             align="center"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
@@ -91,10 +93,11 @@
             :total="tableData.length">
         </el-pagination>
         </div>
-        <!-- 分页开始 -->
         <div class="boxFour">
             <el-pagination
                 background
+                small
+                :pager-count="5"
                 align="center"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -109,24 +112,39 @@
         <!-- 查看详情开始 -->
         <el-dialog
             :visible.sync="dialogVisible"
-            width="95%"
+            width="80%"
+            :data="number"
             >
-            <div style="width:100%">
+            <!-- <dv-border-box-1> -->
+                <div class="pictureOne">
+                    <div class="chart-container">
+                    <dv-water-level-pond :config="config" />
+                    </div>
+                </div>
+                    <!-- </dv-border-box-1> -->
+                <div class="divOne">班级男女人数比例</div>
+            <!-- <div style="width:100%">
                 <div style="width:50%;float:right">
-                <div class="pictureOne">{{}}</div>
-                <div class="divOne">学生男女人数比例</div>
+                    <dv-border-box-1>
+                <div class="pictureOne">
+                    <div class="chart-container">
+                    <dv-water-level-pond :config="config" />
+                    </div>
+                </div>
+                    </dv-border-box-1>
+                <div class="divOne">教师男女人数比例</div>
                 </div>
                 <div>
-                <div class="pictureTwo">{{}}</div>
-                <div class="divTwo">教师男女人数比例</div>
+                <div class="pictureTwo">{{number.student}}</div>
+                <div class="divTwo">学生男女人数比例</div>
                 </div>
-            </div>
-            <div>
+            </div> -->
+            <!-- <div>
             <div>
             <div class="pictureThree">{{}}</div>
             <div class="divThree">学生人数各科目平均成绩柱状图</div>
             </div>
-            </div>
+            </div> -->
         </el-dialog>
         <!-- 查看详情结束 -->
     </div>
@@ -136,52 +154,123 @@
 export default {
     data() {
         return {
+        config: {
+        name:'男',
+        data: [],
+        shape: 'round',
+        waveHeight: 25,
+        waveNum: 2
+        },
+        number:{},
+        info:{},
         // 搜索输入框
         input: '',
          // 表格数据
-        tableData: [
-        {
-            professionalClasses: '计算机与软件学院',
-            StudentNumber: '100000'
-        },
-        {
-            professionalClasses: '信息与商务管理学院',
-            StudentNumber: '...........'
-        },
-        {
-            professionalClasses: '数字艺术与设计学院',
-            StudentNumber: '名字'
-        },
-        {
-            professionalClasses: 'xxxxxxxxxxxxx',
-            StudentNumber: 'namebalbala'
-        },
-        {
-            professionalClasses: '计算机与软件学院',
-            StudentNumber: '名字'
-        },
-        {
-            professionalClasses: '信息与商务管理学院',
-            StudentNumber: '...........'
-        },
-        {
-            professionalClasses: '数字艺术与设计学院',
-            StudentNumber: '名字'
-        },
-        {
-            professionalClasses: 'xxxxxxxxxxxxx',
-            StudentNumber: 'namebalbala'
-        },
-        ],
+        tableData: [],
         // 分页
         currentPage: 1,
         pageSize:5,
         dialogVisible: false
         }
     },
+    created() {
+        this.id = this.$route.query.id;
+        this.getAllInfo();
+        this.getAllInfoOne();
+        this.getAllInfoTwo();
+        this.getAllInfoThree();
+    },
     methods:{
+        // 查看专业总数
+        async getAllInfoOne() {
+            sessionStorage.setItem('id',this.id);
+            const id=sessionStorage.getItem('id');
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/college/allsp', {
+                id: id,
+                token: token
+            });
+            // console.log(res);
+            if(res.code === 200) {
+            this.$message({
+                showClose: true,
+                message: '查询成功~',
+                type: 'success'
+        });
+                this.info.One = res.data
+            } else {
+                this.$message.error('抱歉，查看专业总数失败，请刷新重试~');
+            }
+        },
+        // 查看学生总数
+        async getAllInfoTwo() {
+            sessionStorage.setItem('id',this.id);
+            const id=sessionStorage.getItem('id');
+            console.log(id);
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/college/allstudent', {
+                id: id,
+                token: token
+            });
+            console.log(res);
+            if(res.code === 200) {
+            this.$message({
+                showClose: true,
+                message: '查询成功~',
+                type: 'success'
+        });
+                this.info.Two = res.data;
+                sessionStorage.setItem('num',res.data);
+            } else {
+                this.$message.error('抱歉，查看学生总数失败，请刷新重试~');
+            }
+        },
+        // 查看教师总数
+        async getAllInfoThree() {
+            sessionStorage.setItem('id',this.id);
+            const id=sessionStorage.getItem('id');
+            const token=localStorage.getItem('token');
+            const { data:res } = await this.$http.post('/api/college/allteacher', {
+                id: id,
+                token: token
+            });
+            // console.log(res);
+            if(res.code === 200) {
+            this.$message({
+                showClose: true,
+                message: '查询成功~',
+                type: 'success'
+        });
+                this.info.Three = res.data
+            } else {
+                this.$message.error('抱歉，查看教师总数失败，请刷新重试~');
+            }
+        },
+        // 获取所有的信息
+        async getAllInfo() {
+            const token = localStorage.getItem('token');
+            sessionStorage.setItem('id',this.id);
+            const id=sessionStorage.getItem('id');
+            // console.log(id);
+            const { data:res } = await this.$http.post('/api/college/showclass',
+            {
+                id: id,
+                token: token
+            })
+            console.log(res.data);
+            if(res.code === 200){
+            this.$message({
+                showClose: true,
+                message: '查询成功~',
+                type: 'success'
+        });
+                this.tableData = res.data;
+            } else {
+                this.$message.error('抱歉，查看详情失败，请刷新重试~');
+            }
+        },
         hReturn(){
-            this.$router.push('/hSchool');
+            this.$router.push('/university');
         },
                 // 分页
         handleSizeChange(val) {
@@ -198,6 +287,22 @@ export default {
                 done();
             })
             .catch(_ => {});
+        },
+        // 查看学生男女人数
+        async LookPicture() {
+            const id=sessionStorage.getItem('id');
+            // console.log(id);
+            const token=localStorage.getItem('token');
+            const { data:res } =await this.$http.post('/api/college/xclass?token='+token+'&id='+id);
+            console.log(res);
+            console.log(res.data.number);
+            const { data:re } =await this.$http.post('/api/college/xclass1?token='+token+'&id='+id);
+            console.log(re);
+            console.log(re.data.number);
+            const { config } = this;
+            console.log(config);
+            this.config.data = [res.data.number];
+            this.config = {...this.config};
         }
     }
     }
@@ -263,13 +368,13 @@ export default {
 }
 
 /* 学生男女人数比例 */
-.pictureOne {
+/* .pictureOne {
     width:90%;
     height:200px;
     margin-left: 9%;
     border:2px solid #F4F5FC;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
+} */
 
 /* 教师人数比例男女 */
 .pictureTwo {
@@ -290,6 +395,13 @@ export default {
     padding: 5px;
     /* margin-left: 40px; */
     margin-top: 15px;
+}
+.chart-container {
+    flex: 1;
+    height: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .divTwo{
     text-align: center;

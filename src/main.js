@@ -7,12 +7,17 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import './assets/global.css'
 import './assets/fonts/iconfont.css'
-// import axios from 'axios'
-// Vue.prototype.$http = axios
+
+import axios from 'axios'
+Vue.prototype.$http = axios
+axios.defaults.baseURL = 'http://schoolsys.wzhyuming.top'
+
+// 将自动注册所有组件为全局组件
+import dataV from '@jiaminghi/data-view'
+Vue.use(dataV)
 
 Vue.config.productionTip = false
 Vue.use(ElementUI);
-// axios.defaults.baseURL = ''
 
 new Vue({
   router,

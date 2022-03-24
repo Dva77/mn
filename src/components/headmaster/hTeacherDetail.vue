@@ -136,20 +136,22 @@
             :data="tableData"
             :stripe="true"
             style="width: 70%;left:8%;margin:2%"
-            height="200"
+            max-height="200"
             border
             :header-cell-style="{fontWeight:'bold', fontSize:'14px', color:'#000'}"
         >
         <el-table-column
-            prop="TeacherClass"
+            prop="class"
             label="教师教授班级"
             min-width="150"
             >
         </el-table-column>
         <el-table-column
-            prop="AverageScore"
             label="期末平均分"
             min-width="100">
+            <template slot-scope="scope">
+        <el-input :disabled="true" v-model="input1" @click="input(scope.row)"></el-input>
+            </template>
         </el-table-column>
         </el-table>
         <!-- 成绩表格结束 -->
@@ -160,6 +162,7 @@
 export default {
 data() {
     return {
+        input1:'',
         labelPosition: 'left',
         DetailsForm:{
             TeacherName:'',
@@ -181,31 +184,104 @@ data() {
             TeacherRank:''
         },
         // 成绩表格
-        tableData: [{
-            TeacherClass: '2016-05-03',
-            AverageScore: '王小虎'
-        }, {
-            TeacherClass: '2016-05-02',
-            AverageScore: '王小虎'
-        }, {
-            TeacherClass: '2016-05-04',
-            AverageScore: '王小虎'
-        }, {
-            TeacherClass: '2016-05-01',
-            AverageScore: '王小虎'
-        }, {
-            TeacherClass: '2016-05-08',
-            AverageScore: '王小虎'
-        }, {
-            TeacherClass: '2016-05-06',
-            AverageScore: '王小虎'
-        }, {
-            TeacherClass: '2016-05-07',
-            AverageScore: '王小虎'
-        }]
+        tableData: [
+        ]
     }
 },
+    created() {
+        this.id = this.$route.query.id;
+        this.getAllNumber();
+        this.getAllInfo();
+    },
     methods:{
+    // 获取班级人数
+        async getAllNumber() {
+            const token = localStorage.getItem('token');
+            sessionStorage.setItem('id',this.id);
+            const id=sessionStorage.getItem('id');
+            // console.log(id);
+            const { data:res } = await this.$http.post('/api/speciality/xiangqing1', {
+                id: id,
+                token: token
+            });
+            console.log(res);
+            console.log(res.data.map(o=>{return[o.Number]}));
+            sessionStorage.setItem('Number',res.data.map(o=>{return[o.Number]}));
+        },
+        // 获取所有的信息
+        async getAllInfo() {
+            const token = localStorage.getItem('token');
+            sessionStorage.setItem('id',this.id);
+            const id=sessionStorage.getItem('id');
+            // console.log(id);
+            const { data:res } = await this.$http.post('/api/teacher/xiangqing',
+            {
+                id: id,
+                token: token
+            })
+            console.log(res);
+            sessionStorage.setItem('subject',res.data.map(o=>{return[o.Subject]}));
+            sessionStorage.setItem('idShow',res.data.map(o=>{return[o.id]}));
+            sessionStorage.setItem('class1',res.data.map(o=>{return[o.class]}));
+            if(res.code === 200){
+        //         this.$message({
+        //         showClose: true,
+        //         message: '查询成功~',
+        //         type: 'success'
+        // });
+                this.DetailsForm.TeacherName = res.data[0].TeacherName;
+                this.DetailsFormTwo.TeacherAge = res.data[0].TeacherAge;
+                if(res.data[0].TeacherSex == 0){
+                    this.DetailsFormTwo.TeacherSex = "女";
+                } else {
+                    this.DetailsFormTwo.TeacherSex = "男";
+                }
+                this.DetailsFormThree.TeacherPhone = res.data[0].TeacherPhone;
+                this.DetailsFormThree.TeacherEmail = res.data[0].TeacherEmail;
+                this.DetailsFormFour.TeacherCollege = res.data[0].TFormCollege;
+                this.DetailsFormFour.TeacherSubject = res.data[0].Subject;
+                this.tableData = res.data;
+                // console.log(res.data[0].class);
+                if(res.data[0].ifPresident == 0){
+                    this.DetailsFormFive.TeacherWhether = "不是";
+                } else {
+                    this.DetailsFormFive.TeacherWhether = "是";
+                }
+                this.DetailsFormFive.TeacherRank = res.data[0].Title;
+            const num=sessionStorage.getItem('Number');
+            const idShow=sessionStorage.getItem('idShow');
+            const subject=sessionStorage.getItem('subject');
+            const class1=sessionStorage.getItem('class1');
+            // console.log(num);
+            // console.log(idShow);
+            // console.log(subject);
+            // console.log(class1);
+            const { data:re } = await this.$http.post('/api/teacher/showav', {
+                    subject: subject,
+                    id: idShow,
+                    num:num,
+                    token: token
+                });
+                console.log(re.data.avg);
+                // var list =new Array(re.data+','+class1)
+                // console.log(list);
+                // this.list = re.data;
+                // var data = list.split(",")
+                if(re.code === 200){
+                    this.input1 = re.data.avg
+                    // this.tableData = re.avg;
+                this.$message({
+                showClose: true,
+                message: '查询成功~',
+                type: 'success'
+        });
+                }else{
+                    this.$message.error('抱歉，查看期末平均成绩，请刷新重试~');
+                }
+            } else {
+                this.$message.error('抱歉，查看详情失败，请刷新重试~');
+            }
+        },
         //    返回按钮
         goTo(){
             this.$router.replace('/hTeacher');
@@ -232,4 +308,17 @@ data() {
 ::v-deep .el-table tr {
 	background-color: #F4F5FC;
 }
+
+  .demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
 </style>
