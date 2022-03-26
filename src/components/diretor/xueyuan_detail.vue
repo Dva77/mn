@@ -498,7 +498,7 @@ export default {
            console.log(res);
           return this.$message.error("添加失败")
         }
-        console.log(res);
+        // console.log(res);
         // this.tableData = res.data
         this.getUserList()
         val.add_sex = ''

@@ -46,27 +46,20 @@
     >
 
     <!-- 修改密码弹窗 -->
-    <div class="tanchuang">
+    <div>
       <!-- :visible.sync控制弹窗显示隐藏 -->
       <el-dialog :visible.sync="dialogFormVisible" overflow="auto">
         <el-form :rules="FormRules" ref="Form" :model="Form">
-
           <el-form-item label="修改密码" prop="password1">
-              <el-input type="password" v-model="Form.password1"></el-input>
+            <el-input type="password" v-model="Form.password1"></el-input>
           </el-form-item>
           <el-form-item label="再次输入" prop="password2">
-              <el-input type="password" v-model="Form.password2"></el-input>
+            <el-input type="password" v-model="Form.password2"></el-input>
           </el-form-item>
-
         </el-form>
-        <div slot="footer" class="dialog-footer">
+        <div slot="footer">
           <el-row>
-            <el-button
-              type="primary"
-              @click="
-                dialogFormVisible = false;
-                onsubmit();
-              "
+            <el-button type="primary" @click="onsubmit()"
               >确 定</el-button
             ></el-row
           >
@@ -80,23 +73,22 @@
 export default {
   data() {
     return {
-      aa: "",
       // 修改密碼
-     Form:{
-        password1:'',
-        password2:''
+      Form: {
+        password1: "",
+        password2: "",
       },
       // 教师个人信息
       teacherDate: {
-        TeacherName: "name",
-        TeacherAge: "age",
-        TeacherSex: "sex",
-        TeacherPhone: "12345678901",
-        TeacherEmail: "123456789",
-        TFormCollege: "college",
-        SubjectName: "subject",
-        ifPresident: "否",
-        cheng: "111",
+        TeacherName: "",
+        TeacherAge: "",
+        TeacherSex: "",
+        TeacherPhone: "",
+        TeacherEmail: "",
+        TFormCollege: "",
+        SubjectName: "",
+        ifPresident: "",
+        cheng: "",
       },
       // 教师班级成绩表格
       teachtableData: [
@@ -113,75 +105,80 @@ export default {
       // 输入框验证
       FormRules: {
         password1: [
-          { required: true, message: "密码", trigger: "blur" },
+          { required: true, message: "请输入密码", trigger: "blur" },
           { min: 2, max: 11, message: "2~11位", trigger: "blur" },
         ],
 
         password2: [
-          { required: true, message: "请再次输入验证码", trigger: "blur" },
-           { min: 2, max: 11, message: "2~11位", trigger: "blur" },
+          { required: true, message: "请再次输入", trigger: "blur" },
+          { min: 2, max: 11, message: "2~11位", trigger: "blur" },
         ],
       },
     };
   },
   created: function () {
     this.teachermessage();
+    this.getsubject();
     this.point();
   },
   methods: {
-
+    // 页面加载调用，获取subject
+    async getsubject() {
+      let token = localStorage.getItem("token"); //取token
+      // let email = localStorage.getItem("account");
+      let email = 1;
+      const { data: res } = await this.$http.get(
+        `/api/teacher/returnsubject?token=` + token + "&email=" + email
+      );
+      // console.log(res);
+      // console.log(res.data);
+      localStorage.setItem("subject", res.data[0].subject);
+    },
     // 教师信息展示
     async teachermessage() {
       let token = localStorage.getItem("token"); //取token
-      var id = 7;
-      var subject = 1;
-      // console.log(id);
-      // console.log(token);
-      // console.log(subject);
+      var subject = localStorage.getItem("subject");
+      let email = localStorage.getItem("account");
+      //  console.log(subject);
+      // var email=3378335470;
+      // var subject=55555;
       const { data: res } = await this.$http.get(
         `/api/teacher/personal?token=` +
           token +
-          "&id=" +
-          id +
+          "&email=" +
+          email +
           "&subject=" +
           subject
       );
+      // 渲染教师信息
+      if (res.code == 100) {
+        this.$message.error("当前登录非教师账号");
+      } else if (res.code == 200) {
+        this.teacherDate.SubjectName = res.data[0][0].SubjectName;
+        this.teacherDate.TeacherAge = res.data[1][0].TeacherAge;
+        this.teacherDate.TeacherName = res.data[1][0].TeacherName;
+        this.teacherDate.TeacherSex = res.data[1][0].TeacherSex;
+        this.teacherDate.TeacherPhone = res.data[1][0].TeacherPhone;
+        this.teacherDate.TeacherEmail = res.data[1][0].TeacherEmail;
+        this.teacherDate.TFormCollege = res.data[1][0].TFormCollege;
+        this.teacherDate.ifPresident = res.data[1][0].ifPresident;
+      }
+    },
 
-console.log(res);
-      console.log(res.data);
-      // console.log(res.data[0]);
-      // console.log(res.data[1]);
-      // console.log(res.data[0][0].ifPresident);
-      this.teacherDate.SubjectName = res.data[1][0].SubjectName;
-      this.teacherDate.TeacherAge = res.data[0][0].TeacherAge;
-      this.teacherDate.TeacherName = res.data[0][0].TeacherName;
-      this.teacherDate.TeacherSex = res.data[0][0].TeacherSex;
-      this.teacherDate.TeacherPhone = res.data[0][0].TeacherPhone;
-      this.teacherDate.TeacherEmail = res.data[0][0].TeacherEmail;
-      this.teacherDate.TFormCollege = res.data[0][0].TFormCollege;
-      this.teacherDate.ifPresident = res.data[0][0].ifPresident;
-      },
-
-
-
-      // 平均分展示
-      async  point(){
-        let token = localStorage.getItem("token");
-        const email = localStorage.getItem("account");
-         const { data: res } = await this.$http.post(
+    // 平均分展示
+    async point() {
+      let token = localStorage.getItem("token");
+      const email = localStorage.getItem("account");
+      // let email = 321
+      const { data: res } = await this.$http.post(
         `/api/deans/checktwo?token=` + token,
         {
-          email : email,
+          email: email,
         }
       );
-      // console.log(res.data);
-      // console.log(res.data.length);
-      this.teachtableData=[];
-      for(let i=0;i<res.data.length;i++){
-           this.teachtableData.push(res.data[i]);
-      }
-      },
-
+      // 渲染班级平均分
+      this.teachtableData = res.data;
+    },
 
     // 弹窗里确定修改密码
     async onsubmit() {
@@ -189,26 +186,34 @@ console.log(res);
       let account = localStorage.getItem("account");
       var password1 = this.Form.password1;
       var password2 = this.Form.password2;
-      if(password1==''||password2==''){
-         this.$message.error("请输入密码")
-         return false
-      }
-    //  两次密码输入一致
-      if(password1!== password2){
-         this.$message.error("两次输入不一致")
+      if (password1 == "" || password2 == "") {
+        this.$message.error("请输入密码");
         return false;
       }
-      const { data: res } = await this.$http.post(
-        `/api/teacher/teachermodifycode?token=` + token,
-        {
-          account: account,
-          password: password1,
+      //  两次密码输入一致
+      if (password1 !== password2) {
+        //  console.log(password1);
+        //  console.log(password2);
+        this.$message.error("两次输入不一致");
+        return false;
+      } else {
+        const { data: res } = await this.$http.post(
+          `/api/teacher/teachermodifycode?token=` + token,
+          {
+            account: account,
+            password: password1,
+          }
+        );
+        // console.log(res.data);
+        if (res.code == 200) {
+          this.dialogFormVisible = false;
+          this.$message.success("修改成功！");
+          this.Form.password1 = "";
+          this.Form.password2 = "";
+        } else {
+          this.message.error("修改失败");
         }
-      );
-      if(res.code==200){
-         this.$message.success("修改成功！")
       }
-
     },
   },
 };
@@ -241,12 +246,11 @@ console.log(res);
   .el-descriptions {
     font-size: 10px;
   }
-.el-input {
-  width: 19vw;
-}
-.el-table-column{
-  font-size: 10px;
-}
-
+  .el-input {
+    width: 19vw;
+  }
+  .el-table-column {
+    font-size: 10px;
+  }
 }
 </style>

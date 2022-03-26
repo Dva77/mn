@@ -46,25 +46,24 @@
     >
 
     <!-- 修改密码弹窗 -->
-    <div class="tanchuang">
+    <div>
       <!-- :visible.sync控制弹窗显示隐藏 -->
       <el-dialog :visible.sync="dialogFormVisible" overflow="auto">
         <el-form :rules="FormRules" ref="Form" :model="Form">
 
-          <el-form-item label="修改密码" prop="a1">
-              <el-input type="password" v-model="Form.a1"></el-input>
+          <el-form-item label="修改密码" prop="password1">
+              <el-input type="password" v-model="Form.password1"></el-input>
           </el-form-item>
-          <el-form-item label="再次输入" prop="a2">
-              <el-input type="password" v-model="Form.a2"></el-input>
+          <el-form-item label="再次输入" prop="password2">
+              <el-input type="password" v-model="Form.password2"></el-input>
           </el-form-item>
 
         </el-form>
-        <div slot="footer" class="dialog-footer">
+        <div slot="footer">
           <el-row>
             <el-button
               type="primary"
               @click="
-                dialogFormVisible = false;
                 onsubmit();
               "
               >确 定</el-button
@@ -80,23 +79,22 @@
 export default {
   data() {
     return {
-      aa: "",
       // 修改密碼
      Form:{
-        a1:'',
-        a2:''
+        password1:'',
+        password2:''
       },
       // 教师个人信息
       peopleData: {
-        HeadName: "name",
-        HeadAge: "age",
-        HeadSex: "sex",
-        HeadPhone: "12345678901",
-        HeadEmail: "123456789",
-        HeadCollege: "college",
-        SubjectName: "subject",
-        ifPresident: "否",
-        cheng: "111",
+        HeadName: "",
+        HeadAge: "",
+        HeadSex: "",
+        HeadPhone: "",
+        HeadEmail: "",
+        HeadCollege: "",
+        SubjectName: "",
+        ifPresident: "",
+        cheng: "",
       },
       // 班级成绩表格
       teachtableData: [
@@ -111,12 +109,12 @@ export default {
 
       // 输入框验证
       FormRules: {
-        a1: [
+        password1: [
           { required: true, message: "密码", trigger: "blur" },
           { min: 2, max: 11, message: "2~11位", trigger: "blur" },
         ],
 
-        a2: [
+        password2: [
           { required: true, message: "请再次输入验证码", trigger: "blur" },
            { min: 2, max: 11, message: "2~11位", trigger: "blur" },
         ],
@@ -125,6 +123,7 @@ export default {
   },
   created: function () {
     this.teachermessage();
+     this.getsubject();
     this.point();
   },
   methods: {
@@ -133,57 +132,78 @@ export default {
     async onsubmit() {
       let token = localStorage.getItem("token"); //取token
       let account = localStorage.getItem("account");
-      var password1 = this.Form.a1;
-      var password2 = this.Form.a2;
-      if(password1==''||password2==''){
-         this.$message.error("请输入密码")
-         return false
-      }
-    //  两次密码输入一致
-      if(password1!== password2){
-         this.$message.error("两次输入不一致")
+      var password1 = this.Form.password1;
+      var password2 = this.Form.password2;
+      if (password1 == "" || password2 == "") {
+        this.$message.error("请输入密码");
         return false;
       }
-      const { data: res } = await this.$http.post(
-        `/api/teacher/teachermodifycode?token=` + token,
-        {
-          account: account,
-          password: password1,
+      //  两次密码输入一致
+      if (password1 !== password2) {
+        //  console.log(password1);
+        //  console.log(password2);
+        this.$message.error("两次输入不一致");
+        return false;
+      } else {
+        const { data: res } = await this.$http.post(
+          `/api/teacher/teachermodifycode?token=` + token,
+          {
+            account: account,
+            password: password1,
+          }
+        );
+        // console.log(res.data);
+        if (res.code == 200) {
+          this.dialogFormVisible = false;
+          this.$message.success("修改成功！");
+          this.Form.password1 = "";
+          this.Form.password2 = "";
+        } else {
+          this.message.error("修改失败");
         }
-      );
-      if(res.code==200){
-         this.$message.success("修改成功！")
       }
     },
-
+ // 页面加载调用，获取subject
+    async getsubject() {
+      let token = localStorage.getItem("token"); //取token
+      // let email = localStorage.getItem("account");
+      let email = 1;
+      const { data: res } = await this.$http.get(
+        `/api/teacher/returnsubject?token=` + token + "&email=" + email
+      );
+      // console.log(res);
+      // console.log(res.data);
+      localStorage.setItem("subject", res.data[0].subject);
+    },
     // 教师信息展示
     async teachermessage() {
       let token = localStorage.getItem("token"); //取token
-      var id = 7;
-      var subject = 1;
-      // console.log(id);
-      // console.log(token);
-      // console.log(subject);
+      var subject = localStorage.getItem("subject");
+      let email = localStorage.getItem("account");
+      //  console.log(subject);
+      // var email=3378335470;
+      // var subject=55555;
       const { data: res } = await this.$http.get(
         `/api/teacher/personal?token=` +
           token +
-          "&id=" +
-          id +
+          "&email=" +
+          email +
           "&subject=" +
           subject
       );
-      console.log(res);
-      // console.log(res.data[0]);
-      // console.log(res.data[1]);
-      // console.log(res.data[0][0].ifPresident);
-      this.peopleData.SubjectName = res.data[1][0].SubjectName;
-      this.peopleData.HeadAge = res.data[0][0].TeacherAge;
-      this.peopleData.HeadName = res.data[0][0].TeacherName;
-      this.peopleData.HeadSex = res.data[0][0].TeacherSex;
-      this.peopleData.HeadPhone = res.data[0][0].TeacherPhone;
-      this.peopleData.HeadEmail = res.data[0][0].TeacherEmail;
-      this.peopleData.HeadCollege = res.data[0][0].HeadCollege;
-      this.peopleData.ifPresident = res.data[0][0].ifPresident;
+       // 渲染教师信息
+      if (res.code == 100) {
+        this.$message.error("当前登录非校长账号");
+      } else if (res.code == 200) {
+      this.peopleData.SubjectName = res.data[0][0].SubjectName;
+      this.peopleData.HeadAge = res.data[1][0].TeacherAge;
+      this.peopleData.HeadName = res.data[1][0].TeacherName;
+      this.peopleData.HeadSex = res.data[1][0].TeacherSex;
+      this.peopleData.HeadPhone = res.data[1][0].TeacherPhone;
+      this.peopleData.HeadEmail = res.data[1][0].TeacherEmail;
+      this.peopleData.HeadCollege = res.data[1][0].HeadCollege;
+      this.peopleData.ifPresident = res.data[1][0].ifPresident;
+      }
     },
 
 

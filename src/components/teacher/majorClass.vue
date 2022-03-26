@@ -81,10 +81,9 @@
           </el-col>
         </el-form-item>
       </el-form>
+
       <template slot="footer" class="dialog-footer">
-        <el-button
-          type="primary"
-          @click="(dialogFormVisible = false), changefenshu(form.grade)"
+        <el-button type="primary" @click="changefenshu(form.grade)"
           >确 定
         </el-button>
       </template>
@@ -181,7 +180,11 @@ export default {
       // 渲染下拉框
       this.OptionItems = res.data;
       // 存下第一个班级
-      localStorage.setItem("class1", res.data[0].class);
+      // console.log(res.data);
+      if(res.code==200){
+         localStorage.setItem("class1", res.data[0].class);
+      }
+
       // console.log(res);
       // console.log(res.data);
     },
@@ -219,17 +222,13 @@ export default {
 
     // 插槽
     async Alter(item) {
-      // console.log(item);
-      // console.log(item.SNumber);
       localStorage.setItem("SNumber", item.SNumber);
-      localStorage.setItem("subject", item.subject);
-      // this.tableData.SNumber = res.data[1][1][0].grade
     },
     // 根据姓名查询
     async btn_foundname() {
+      let SFormClass = this.ClassValue;
       let token = localStorage.getItem("token"); //取token
       var StudentName = this.checkname;
-      var SFormClass = 2;
       const { data: res } = await this.$http.post(
         `/api/teacher/dgrade?token=` + token,
         {
@@ -250,10 +249,8 @@ export default {
       this.tableData = [];
       // 页数根据数据条数改变
       this.totalCount = res.data.length;
-      for (let i = 0; i < res.data.length; i++) {
-        // console.log(res.data[i]);
-        this.tableData.push(res.data[i]);
-      }
+      // 学生信息渲染
+      this.tableData = res.data;
     },
     // 修改分数弹窗
     async changefenshu() {
@@ -261,12 +258,9 @@ export default {
       let SNumber = localStorage.getItem("SNumber");
       let subject = this.ClassValue;
       var grade = this.form.grade;
-      // console.log(grade);
-      // console.log(SNumber);
-      // console.log(subject);
-      // console.log(this.tableData.grade);
       if (grade < 0 || grade > 100) {
         this.$message.error("输入正确分数");
+        this.form.grade = "";
         return false;
       }
       const { data: res } = await this.$http.post(
@@ -280,12 +274,11 @@ export default {
       // console.log(res.data);
       if (res.code == 200) {
         for (let i = 0; i < this.tableData.length; i++) {
-          // console.log(this.tableData[i]);
           if (this.tableData[i].SNumber == SNumber) {
-            console.log(this.tableData[i].SNumber);
             this.tableData[i].grade = grade;
             this.$message.success("打分成功！");
-            return;
+            this.form.grade = "";
+            this.dialogFormVisible = false;
           }
         }
       } else {
